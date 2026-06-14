@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyTorch — Daily Learning Plan</title>
+<style>
+  :root{
+    --bg:#0a0e14; --bg2:#0d1117; --card:#151b24; --card2:#1b2330;
+    --border:#252e3a; --border2:#323d4d;
+    --text:#e6edf3; --muted:#8b97a7; --faint:#5b6675;
+    --accent:#ee4c2c; --accent2:#ff7a52; --accentGlow:rgba(238,76,44,.35);
+    --green:#3fb950; --greenBg:rgba(63,185,80,.12);
+    --c0:#f78166; --c1:#d2a8ff; --c2:#79c0ff; --c3:#56d364; --c4:#e3b341;
+    --shadow:0 8px 30px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#16202e 0%,var(--bg) 55%) fixed;
+    color:var(--text);line-height:1.5;min-height:100vh;
+    padding:28px 16px 80px;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto}
+
+  /* header */
+  .top{text-align:center;margin-bottom:22px}
+  .kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent2);font-weight:700}
+  .top h1{font-size:26px;font-weight:800;margin:6px 0 2px;letter-spacing:-.02em}
+  .top .sub{color:var(--muted);font-size:13.5px}
+
+  /* hero finish card */
+  .hero{
+    background:linear-gradient(135deg,rgba(238,76,44,.14),rgba(255,122,82,.05) 60%,transparent);
+    border:1px solid var(--border2);border-radius:20px;padding:24px 26px;margin-bottom:18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .hero::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;
+    background:radial-gradient(circle,var(--accentGlow),transparent 70%);pointer-events:none}
+  .hero .lab{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);font-weight:700;margin-bottom:6px}
+  .hero .finish{font-size:clamp(30px,7vw,46px);font-weight:850;letter-spacing:-.03em;line-height:1.05}
+  .hero .meta{color:var(--muted);font-size:14px;margin-top:10px}
+  .hero .meta b{color:var(--text)}
+  .bar{height:9px;border-radius:99px;background:#0c121b;border:1px solid var(--border);margin-top:16px;overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:99px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s ease}
+  .hint{font-size:12.5px;color:var(--faint);margin-top:12px;display:flex;gap:7px;align-items:flex-start}
+  .hint svg{flex:none;margin-top:2px}
+
+  /* stat chips */
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .chip{flex:1;min-width:120px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
+  .chip .n{font-size:20px;font-weight:800;letter-spacing:-.02em}
+  .chip .l{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+
+  /* controls */
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .btn{background:var(--card);border:1px solid var(--border2);color:var(--text);font-size:13px;font-weight:600;
+    padding:8px 13px;border-radius:10px;cursor:pointer;transition:.15s;display:inline-flex;gap:6px;align-items:center}
+  .btn:hover{background:var(--card2);border-color:var(--accent)}
+  .btn.ghost{color:var(--muted)}
+  .spacer{flex:1}
+  .toggle{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+  .toggle input{display:none}
+  .toggle .sw{width:36px;height:20px;border-radius:99px;background:#222c39;border:1px solid var(--border2);position:relative;transition:.2s}
+  .toggle .sw::after{content:"";position:absolute;width:14px;height:14px;border-radius:50%;background:var(--muted);top:2px;left:2px;transition:.2s}
+  .toggle input:checked + .sw{background:rgba(238,76,44,.4);border-color:var(--accent)}
+  .toggle input:checked + .sw::after{left:18px;background:var(--accent2)}
+
+  /* day card */
+  .day{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:11px;
+    overflow:hidden;transition:.18s;scroll-margin-top:16px}
+  .day:hover{border-color:var(--border2)}
+  .day.done{opacity:.62}
+  .day.next{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 10px 30px -10px var(--accentGlow)}
+  .dhead{display:flex;align-items:center;gap:13px;padding:13px 15px;cursor:pointer}
+  .dnum{flex:none;width:42px;height:42px;border-radius:12px;background:var(--card2);border:1px solid var(--border2);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+  .dnum small{font-size:8.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
+  .dnum b{font-size:17px;font-weight:800}
+  .day.done .dnum{background:var(--greenBg);border-color:rgba(63,185,80,.4)}
+  .day.next .dnum{background:rgba(238,76,44,.16);border-color:var(--accent)}
+  .dinfo{flex:1;min-width:0}
+  .dtitle{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .dmin{font-size:12px;color:var(--muted);font-weight:600}
+  .dchaps{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+  .cpill{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.02em}
+  .badge{flex:none;font-size:12px;font-weight:800;padding:6px 11px;border-radius:99px;white-space:nowrap;text-align:center}
+  .badge.today{background:var(--accent);color:#fff;box-shadow:0 0 18px -2px var(--accentGlow)}
+  .badge.tmrw{background:rgba(255,122,82,.16);color:var(--accent2);border:1px solid rgba(255,122,82,.4)}
+  .badge.future{background:var(--card2);color:var(--muted);border:1px solid var(--border2)}
+  .badge.done{background:var(--greenBg);color:var(--green);border:1px solid rgba(63,185,80,.4)}
+  .badge small{display:block;font-size:9.5px;font-weight:600;opacity:.85;letter-spacing:.03em}
+
+  .topics{border-top:1px solid var(--border);padding:6px 15px 13px 15px}
+  .topic{display:flex;align-items:flex-start;gap:11px;padding:8px 4px;cursor:pointer;border-radius:8px}
+  .topic:hover{background:rgba(255,255,255,.02)}
+  .cbox{flex:none;width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);margin-top:1px;
+    display:flex;align-items:center;justify-content:center;transition:.15s;background:#0d131c}
+  .topic.ck .cbox{background:var(--green);border-color:var(--green)}
+  .cbox svg{opacity:0;transition:.15s}
+  .topic.ck .cbox svg{opacity:1}
+  .ttext{flex:1;font-size:13.5px}
+  .topic.ck .ttext{color:var(--faint);text-decoration:line-through}
+  .tnum{display:inline-block;font-size:10.5px;font-weight:700;color:var(--faint);
+    background:#0d131c;border:1px solid var(--border);border-radius:5px;padding:1px 5px;margin-right:7px;vertical-align:1px}
+  .tmin{font-size:11.5px;color:var(--faint);font-weight:600;flex:none;margin-top:1px}
+  .note{font-size:11.5px;color:var(--c4);background:rgba(227,179,65,.08);border:1px solid rgba(227,179,65,.25);
+    border-radius:8px;padding:6px 10px;margin:2px 4px 0}
+  .daybtn{margin:8px 4px 0;width:calc(100% - 8px);background:transparent;border:1px dashed var(--border2);
+    color:var(--muted);font-size:12.5px;font-weight:600;padding:7px;border-radius:9px;cursor:pointer;transition:.15s}
+  .daybtn:hover{border-color:var(--green);color:var(--green)}
+  .day.done .daybtn:hover{border-color:var(--muted);color:var(--muted)}
+
+  .chapsec{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--faint);margin:22px 6px 9px;display:flex;align-items:center;gap:10px}
+  .chapsec::after{content:"";flex:1;height:1px;background:var(--border)}
+  .foot{text-align:center;color:var(--faint);font-size:11.5px;margin-top:26px;line-height:1.7}
+  .celebrate{background:linear-gradient(135deg,rgba(63,185,80,.18),transparent);border-color:rgba(63,185,80,.5)}
+  .celebrate .finish{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="kicker">PyTorch · Zero to Mastery</div>
+    <h1>My Daily Learning Plan</h1>
+    <div class="sub">Picking up at checkpoint #18 → finishing at #157 · ~25–30 min a day</div>
+  </div>
+
+  <div class="hero" id="hero">
+    <div class="lab">🎯 Projected finish date</div>
+    <div class="finish" id="finishDate">—</div>
+    <div class="meta" id="finishMeta"></div>
+    <div class="bar"><i id="barFill" style="width:0%"></i></div>
+    <div class="hint">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5b6675" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span>This date is live. Finish a session early and it moves <b style="color:var(--accent2)">up</b>; miss a day and it shifts back — the daily dates below re-arrange themselves around today automatically.</span>
+    </div>
+  </div>
+
+  <div class="chips">
+    <div class="chip"><div class="n" id="stSessions">0 / 54</div><div class="l">Sessions done</div></div>
+    <div class="chip"><div class="n" id="stHours">0.0 h</div><div class="l">Watched / 22.9 h</div></div>
+    <div class="chip"><div class="n" id="stStreak">0🔥</div><div class="l">Day streak</div></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" onclick="jumpNext()">↧ Jump to today's session</button>
+    <span class="spacer"></span>
+    <label class="toggle"><input type="checkbox" id="hideDone" onchange="render()"><span class="sw"></span> Hide completed</label>
+    <button class="btn ghost" onclick="resetAll()">Reset</button>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="foot">
+    Course: <b>PyTorch for Deep Learning &amp; Machine Learning</b> (freeCodeCamp / Daniel Bourke).<br>
+    Times are video length — coding along will take a little longer. Progress saves to this browser.
+  </div>
+</div>
+
+<script>
+const CH = [
+  {name:"Ch 0 · Fundamentals", short:"Fundamentals", col:"var(--c0)"},
+  {name:"Ch 1 · Workflow", short:"Workflow", col:"var(--c1)"},
+  {name:"Ch 2 · Classification", short:"Classification", col:"var(--c2)"},
+  {name:"Ch 3 · Computer Vision", short:"Computer Vision", col:"var(--c3)"},
+  {name:"Ch 4 · Custom Datasets", short:"Custom Datasets", col:"var(--c4)"},
+];
+
+const DAYS = [
+{"min":14.4,"topics":[{"n":"18","t":"Tensor attributes (info about tensors)","ch":0,"m":8.4},{"n":"19","t":"Manipulating tensors","ch":0,"m":6.0}]},
+{"min":30.5,"topics":[{"n":"20-22","t":"Matrix multiplication","ch":0,"m":30.5}]},
+{"min":23.2,"topics":[{"n":"23-24","t":"Finding the min, max, mean & sum","ch":0,"m":9.5},{"n":"25","t":"Reshaping, viewing and stacking","ch":0,"m":13.7}]},
+{"min":30.7,"topics":[{"n":"26","t":"Squeezing, unsqueezing and permuting","ch":0,"m":11.9},{"n":"27","t":"Selecting data (indexing)","ch":0,"m":9.6},{"n":"28","t":"PyTorch and NumPy","ch":0,"m":9.2}]},
+{"min":22.6,"topics":[{"n":"29","t":"Reproducibility","ch":0,"m":10.8},{"n":"30","t":"Accessing a GPU","ch":0,"m":11.8}]},
+{"min":22.7,"topics":[{"n":"31-32","t":"Setting up device-agnostic code","ch":0,"m":12.6},{"n":"33","t":"Intro to PyTorch Workflow","ch":1,"m":2.8},{"n":"34","t":"Getting setup","ch":1,"m":7.3}]},
+{"min":25.8,"topics":[{"n":"35","t":"Creating a dataset with linear regression","ch":1,"m":9.7},{"n":"36-37","t":"Creating training & test sets","ch":1,"m":16.1}]},
+{"min":26.9,"topics":[{"n":"38-39","t":"Creating our first PyTorch model","ch":1,"m":20.4},{"n":"40","t":"Important model building classes","ch":1,"m":6.5}]},
+{"min":29.4,"topics":[{"n":"41","t":"Checking the internals of our model","ch":1,"m":9.9},{"n":"42","t":"Making predictions with our model","ch":1,"m":11.2},{"n":"43","t":"Training a model (intuition)","ch":1,"m":8.3}]},
+{"min":31.7,"topics":[{"n":"44","t":"Setting up a loss function & optimizer","ch":1,"m":12.9},{"n":"45-47","t":"PyTorch training loop intuition (part 1/2)","ch":1,"m":18.8}]},
+{"min":28.2,"topics":[{"n":"45-47","t":"PyTorch training loop intuition (part 2/2)","ch":1,"m":18.8},{"n":"48","t":"Training loop epoch by epoch","ch":1,"m":9.4}]},
+{"min":26.4,"topics":[{"n":"49-50","t":"Writing testing loop code","ch":1,"m":26.4}]},
+{"min":28.6,"topics":[{"n":"51-53","t":"Saving / loading a model","ch":1,"m":28.6}]},
+{"min":23.8,"topics":[{"n":"54-59","t":"Putting everything together (part 1/2)","ch":1,"m":23.8}]},
+{"min":33.5,"topics":[{"n":"54-59","t":"Putting everything together (part 2/2)","ch":1,"m":23.8},{"n":"60","t":"Intro to ML classification","ch":2,"m":9.7}]},
+{"min":28.0,"topics":[{"n":"61","t":"Classification inputs & outputs","ch":2,"m":9.1},{"n":"62-63","t":"Architecture of a classification NN","ch":2,"m":18.9}]},
+{"min":16.3,"topics":[{"n":"64-65","t":"Turning our data into tensors","ch":2,"m":16.3}]},
+{"min":31.2,"topics":[{"n":"66-67","t":"Coding a NN for classification","ch":2,"m":17.9},{"n":"68","t":"Using torch.nn.Sequential","ch":2,"m":13.3}]},
+{"min":31.0,"topics":[{"n":"69","t":"Loss, optimizer & eval functions","ch":2,"m":14.9},{"n":"70","t":"Logits → probabilities → labels","ch":2,"m":16.1}]},
+{"min":29.7,"topics":[{"n":"71-72","t":"Train & test loops","ch":2,"m":29.7}]},
+{"min":29.9,"topics":[{"n":"73-75","t":"Options to improve a model","ch":2,"m":29.9}]},
+{"min":23.6,"topics":[{"n":"76-77","t":"Creating a straight line dataset","ch":2,"m":18.2},{"n":"78","t":"Evaluating our model's predictions","ch":2,"m":5.4}]},
+{"min":25.6,"topics":[{"n":"79-83","t":"The missing piece — non-linearity (part 1/2)","ch":2,"m":25.6}]},
+{"min":25.6,"topics":[{"n":"79-83","t":"The missing piece — non-linearity (part 2/2)","ch":2,"m":25.6}]},
+{"min":20.8,"topics":[{"n":"84-87","t":"Multiclass problem — all together (part 1/2)","ch":2,"m":20.8}]},
+{"min":20.8,"topics":[{"n":"84-87","t":"Multiclass problem — all together (part 2/2)","ch":2,"m":20.8}]},
+{"min":18.3,"topics":[{"n":"88-91","t":"Troubleshooting a multi-class model (part 1/2)","ch":2,"m":18.3}]},
+{"min":30.1,"topics":[{"n":"88-91","t":"Troubleshooting a multi-class model (part 2/2)","ch":2,"m":18.3},{"n":"92","t":"Intro to computer vision","ch":3,"m":11.8}]},
+{"min":24.5,"topics":[{"n":"93","t":"Computer vision inputs & outputs","ch":3,"m":10.2},{"n":"94","t":"What is a CNN?","ch":3,"m":5.0},{"n":"95","t":"TorchVision","ch":3,"m":9.3}]},
+{"min":24.4,"topics":[{"n":"96-97","t":"Getting a computer vision dataset","ch":3,"m":24.4}]},
+{"min":28.9,"topics":[{"n":"98","t":"Mini-batches","ch":3,"m":7.3},{"n":"99-102","t":"Creating DataLoaders (part 1/2)","ch":3,"m":21.6}]},
+{"min":21.6,"topics":[{"n":"99-102","t":"Creating DataLoaders (part 2/2)","ch":3,"m":21.6}]},
+{"min":17.2,"topics":[{"n":"103-104","t":"Train & test loops for batched data (part 1/2)","ch":3,"m":17.2}]},
+{"min":33.2,"topics":[{"n":"103-104","t":"Train & test loops for batched data (part 2/2)","ch":3,"m":17.2},{"n":"105","t":"Running experiments on the GPU","ch":3,"m":3.8},{"n":"106-107","t":"Model with non-linear functions","ch":3,"m":12.2}]},
+{"min":31.1,"topics":[{"n":"108-111","t":"Creating a train/test loop","ch":3,"m":31.1}]},
+{"min":28.2,"topics":[{"n":"112","t":"CNNs (overview)","ch":3,"m":8.4},{"n":"113","t":"Coding a CNN","ch":3,"m":19.8}]},
+{"min":23.6,"topics":[{"n":"114-117","t":"Breaking down nn.Conv2d / nn.MaxPool2d (part 1/2)","ch":3,"m":23.6}]},
+{"min":23.6,"topics":[{"n":"114-117","t":"Breaking down nn.Conv2d / nn.MaxPool2d (part 2/2)","ch":3,"m":23.6}]},
+{"min":27.0,"topics":[{"n":"118-119","t":"Training our first CNN","ch":3,"m":15.3},{"n":"120","t":"Predictions on random test samples","ch":3,"m":11.7}]},
+{"min":23.6,"topics":[{"n":"121-122","t":"Plotting our best model predictions","ch":3,"m":23.6}]},
+{"min":24.5,"topics":[{"n":"123-125","t":"Confusion matrix evaluation","ch":3,"m":24.5}]},
+{"min":29.9,"topics":[{"n":"126-127","t":"Intro to custom datasets","ch":4,"m":15.8},{"n":"128","t":"Downloading a custom dataset","ch":4,"m":14.1}]},
+{"min":25.2,"topics":[{"n":"129-131","t":"Becoming one with the data","ch":4,"m":25.2}]},
+{"min":18.5,"topics":[{"n":"132-135","t":"Turning images into tensors (part 1/2)","ch":4,"m":18.5}]},
+{"min":18.5,"topics":[{"n":"132-135","t":"Turning images into tensors (part 2/2)","ch":4,"m":18.5}]},
+{"min":26.2,"topics":[{"n":"136","t":"Creating image DataLoaders","ch":4,"m":9.1},{"n":"137-138","t":"Custom dataset class (overview)","ch":4,"m":17.1}]},
+{"min":19.7,"topics":[{"n":"139-141","t":"Custom dataset class from scratch (part 1/2)","ch":4,"m":19.7}]},
+{"min":19.7,"topics":[{"n":"139-141","t":"Custom dataset class from scratch (part 2/2)","ch":4,"m":19.7}]},
+{"min":21.4,"topics":[{"n":"142","t":"Custom datasets → DataLoaders","ch":4,"m":7.0},{"n":"143","t":"Data augmentation","ch":4,"m":14.4}]},
+{"min":27.9,"topics":[{"n":"144-146","t":"Building a baseline model","ch":4,"m":27.9}]},
+{"min":23.3,"topics":[{"n":"147","t":"Model summary with torchinfo","ch":4,"m":6.7},{"n":"148-150","t":"Training & testing loop functions (part 1/2)","ch":4,"m":16.6}]},
+{"min":25.7,"topics":[{"n":"148-150","t":"Training & testing loop functions (part 2/2)","ch":4,"m":16.6},{"n":"151","t":"Plotting model 0 loss curves","ch":4,"m":9.1}]},
+{"min":32.4,"topics":[{"n":"152-154","t":"Overfitting and underfitting","ch":4,"m":32.4}]},
+{"min":27.3,"topics":[{"n":"155","t":"Plotting model 1 loss curves","ch":4,"m":3.4},{"n":"156","t":"Plotting all the loss curves","ch":4,"m":10.9},{"n":"157","t":"Predicting on custom data","ch":4,"m":13.0}]}
+];
+
+const TOTAL_MIN = DAYS.reduce((a,d)=>a+d.topics.reduce((s,t)=>s+t.m,0),0);
+const KEY = "pytorch_plan_v1";
+
+/* ---------- state ---------- */
+let state = {};
+try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ state = {}; }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+const tid = (di,ti)=> di+"_"+ti;
+
+/* ---------- date helpers ---------- */
+function startOfDay(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+const TODAY = startOfDay(new Date());
+const TODAY_S = ymd(TODAY);
+function fmtLong(d){ return d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"}); }
+function fmtShort(d){ return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}); }
+
+/* ---------- day status ---------- */
+function dayDone(di){ return DAYS[di].topics.every((_,ti)=> state[tid(di,ti)]); }
+function dayDoneDate(di){
+  let mx=null;
+  DAYS[di].topics.forEach((_,ti)=>{ const v=state[tid(di,ti)]; if(v && (!mx||v>mx)) mx=v; });
+  return mx;
+}
+
+/* ---------- the dynamic schedule ---------- */
+function buildSchedule(){
+  const incomplete = [];
+  DAYS.forEach((_,di)=>{ if(!dayDone(di)) incomplete.push(di); });
+  // sessions fully completed *today* mean today's quota is met -> next one is tomorrow
+  let completedToday = 0;
+  DAYS.forEach((_,di)=>{ if(dayDone(di) && dayDoneDate(di)===TODAY_S) completedToday++; });
+  const startOffset = completedToday>0 ? 1 : 0;
+  const dateForDay = {};
+  incomplete.forEach((di,k)=>{ dateForDay[di] = addDays(TODAY, startOffset + k); });
+  const finish = incomplete.length ? dateForDay[incomplete[incomplete.length-1]] : null;
+  return { incomplete, dateForDay, finish, startOffset, completedToday, nextIdx: incomplete[0] };
+}
+
+/* ---------- streak ---------- */
+function streak(){
+  const dates = new Set(Object.values(state));
+  if(dates.size===0) return 0;
+  let anchor;
+  if(dates.has(TODAY_S)) anchor = new Date(TODAY);
+  else if(dates.has(ymd(addDays(TODAY,-1)))) anchor = addDays(TODAY,-1);
+  else return 0;
+  let s=0;
+  while(dates.has(ymd(anchor))){ s++; anchor=addDays(anchor,-1); }
+  return s;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const sch = buildSchedule();
+  const list = document.getElementById("list");
+  const hideDone = document.getElementById("hideDone").checked;
+  list.innerHTML = "";
+
+  let lastChapHeader = -1;
+  DAYS.forEach((day,di)=>{
+    const done = dayDone(di);
+    if(done && hideDone) return;
+    const isNext = di===sch.nextIdx;
+
+    // chapter section divider (based on first topic's chapter)
+    const firstCh = day.topics[0].ch;
+    if(firstCh!==lastChapHeader){
+      const sec=document.createElement("div");
+      sec.className="chapsec";
+      sec.style.color=CH[firstCh].col;
+      sec.textContent=CH[firstCh].name;
+      list.appendChild(sec);
+      lastChapHeader=firstCh;
+    }
+
+    const card=document.createElement("div");
+    card.className="day"+(done?" done":"")+(isNext?" next":"");
+    card.id="day"+di;
+
+    // badge
+    let badge="";
+    if(done){
+      const dd=dayDoneDate(di);
+      const ddTxt = dd? new Date(dd+"T00:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric"}) : "";
+      badge=`<div class="badge done">✓ Done<small>${ddTxt}</small></div>`;
+    } else {
+      const d=sch.dateForDay[di];
+      const ds=ymd(d);
+      if(ds===TODAY_S) badge=`<div class="badge today">TODAY<small>${fmtShort(d)}</small></div>`;
+      else if(ds===ymd(addDays(TODAY,1))) badge=`<div class="badge tmrw">Tomorrow<small>${fmtShort(d)}</small></div>`;
+      else badge=`<div class="badge future">${fmtShort(d)}</div>`;
+    }
+
+    // chapter pills
+    const chs=[...new Set(day.topics.map(t=>t.ch))];
+    const chapPills=chs.map(c=>`<span class="cpill" style="color:${CH[c].col};border:1px solid ${CH[c].col};background:transparent">${CH[c].short}</span>`).join("");
+
+    const mins=Math.round(day.topics.reduce((s,t)=>s+t.m,0));
+
+    let html=`
+      <div class="dhead" data-day="${di}" data-head="1">
+        <div class="dnum"><small>Day</small><b>${di+1}</b></div>
+        <div class="dinfo">
+          <div class="dtitle">Session ${di+1} <span class="dmin">· ~${mins} min</span></div>
+          <div class="dchaps">${chapPills}</div>
+        </div>
+        ${badge}
+      </div>
+      <div class="topics">`;
+    day.topics.forEach((t,ti)=>{
+      const ck=!!state[tid(di,ti)];
+      html+=`
+        <div class="topic ${ck?'ck':''}" data-day="${di}" data-topic="${ti}">
+          <div class="cbox"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="ttext"><span class="tnum">#${t.n}</span>${t.t}</div>
+          <div class="tmin">${Math.round(t.m)}m</div>
+        </div>`;
+    });
+    if(mins>32) html+=`<div class="note">⏱ A touch longer than usual — fine to split across two sittings if you're short on time.</div>`;
+    html+=`<button class="daybtn" data-day="${di}" data-all="1">${done?"↺ Mark session not done":"✓ Mark whole session complete"}</button>`;
+    html+=`</div>`;
+    card.innerHTML=html;
+    list.appendChild(card);
+  });
+
+  // hero
+  const doneCount = DAYS.filter((_,di)=>dayDone(di)).length;
+  const fd=document.getElementById("finishDate");
+  const fm=document.getElementById("finishMeta");
+  const hero=document.getElementById("hero");
+  if(!sch.finish){
+    hero.classList.add("celebrate");
+    fd.textContent="🎉 Course complete!";
+    fm.innerHTML=`All <b>54</b> sessions done — go build something.`;
+  } else {
+    hero.classList.remove("celebrate");
+    fd.textContent=fmtLong(sch.finish);
+    const left=sch.incomplete.length;
+    const daysAway=Math.round((sch.finish-TODAY)/86400000);
+    fm.innerHTML=`<b>${left}</b> session${left>1?"s":""} left · finishing in <b>${daysAway}</b> day${daysAway>1?"s":""}`
+      + (sch.completedToday>0?` · <b style="color:var(--green)">nice — ${sch.completedToday} done today ✓</b>`:``);
+  }
+
+  // chips + bar
+  const ckMin = DAYS.reduce((a,d,di)=>a+d.topics.reduce((s,t,ti)=>s+(state[tid(di,ti)]?t.m:0),0),0);
+  document.getElementById("stSessions").textContent=`${doneCount} / 54`;
+  document.getElementById("stHours").textContent=`${(ckMin/60).toFixed(1)} h`;
+  document.getElementById("stStreak").textContent=`${streak()} 🔥`;
+  document.getElementById("barFill").style.width=(doneCount/54*100).toFixed(1)+"%";
+
+  save();
+}
+
+/* ---------- interactions ---------- */
+document.getElementById("list").addEventListener("click",(e)=>{
+  const topic=e.target.closest(".topic");
+  const head=e.target.closest("[data-head]");
+  const allBtn=e.target.closest("[data-all]");
+  if(allBtn){
+    const di=+allBtn.dataset.day;
+    const allDone=dayDone(di);
+    DAYS[di].topics.forEach((_,ti)=>{ if(allDone) delete state[tid(di,ti)]; else state[tid(di,ti)]=TODAY_S; });
+    render(); return;
+  }
+  if(topic){
+    const di=+topic.dataset.day, ti=+topic.dataset.topic;
+    if(state[tid(di,ti)]) delete state[tid(di,ti)]; else state[tid(di,ti)]=TODAY_S;
+    render(); return;
+  }
+  if(head){ // clicking the header toggles whole day too
+    const di=+head.dataset.day;
+    const allDone=dayDone(di);
+    DAYS[di].topics.forEach((_,ti)=>{ if(allDone) delete state[tid(di,ti)]; else state[tid(di,ti)]=TODAY_S; });
+    render();
+  }
+});
+
+function jumpNext(){
+  const sch=buildSchedule();
+  if(sch.nextIdx==null) return;
+  if(document.getElementById("hideDone").checked===false){}
+  const el=document.getElementById("day"+sch.nextIdx);
+  if(el) el.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function resetAll(){
+  if(confirm("Reset all progress? This clears every checkmark.")){ state={}; save(); render(); }
+}
+
+render();
+setTimeout(jumpNext, 350);
+</script>
+</body>
+</html>
